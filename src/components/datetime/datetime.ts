@@ -8,6 +8,7 @@ import { Form } from '../../util/form';
 import { Item } from '../item/item';
 import { merge, isBlank, isPresent, isTrueProperty, isArray, isString } from '../../util/util';
 import { dateValueRange, renderDateTime, renderTextFormat, convertFormatToKey, getValueFromFormat, parseTemplate, parseDate, updateDate, DateTimeData, convertDataToISO, daysInMonth, dateSortValue, dateDataSortValue, LocaleData } from '../../util/datetime-util';
+import {FormPicker} from "../../util/formPicker";
 
 export const DATETIME_VALUE_ACCESSOR = new Provider(
     NG_VALUE_ACCESSOR, {useExisting: forwardRef(() => DateTime), multi: true});
@@ -263,7 +264,7 @@ export const DATETIME_VALUE_ACCESSOR = new Provider(
   providers: [DATETIME_VALUE_ACCESSOR],
   encapsulation: ViewEncapsulation.None,
 })
-export class DateTime implements AfterContentInit, ControlValueAccessor, OnDestroy {
+export class DateTime extends FormPicker implements AfterContentInit, ControlValueAccessor, OnDestroy{
   private _disabled: any = false;
   private _labelId: string;
   private _text: string = '';
@@ -274,10 +275,6 @@ export class DateTime implements AfterContentInit, ControlValueAccessor, OnDestr
   private _value: DateTimeData = {};
   private _locale: LocaleData = {};
 
-  /**
-   * @private
-   */
-  id: string;
 
   /**
    * @input {string} The minimum datetime allowed. Value must be a date string
@@ -317,16 +314,6 @@ export class DateTime implements AfterContentInit, ControlValueAccessor, OnDestr
    * parse format. Defaults to use `displayFormat`.
    */
   @Input() pickerFormat: string;
-
-  /**
-   * @input {string} The text to display on the picker's cancel button. Default: `Cancel`.
-   */
-  @Input() cancelText: string = 'Cancel';
-
-  /**
-   * @input {string} The text to display on the picker's "Done" button. Default: `Done`.
-   */
-  @Input() doneText: string = 'Done';
 
   /**
    * @input {array | string} Values used to create the list of selectable years. By default
@@ -397,22 +384,6 @@ export class DateTime implements AfterContentInit, ControlValueAccessor, OnDestr
    * locale names for each day in the week. Defaults to English.
    */
   @Input() dayShortNames: any;
-
-  /**
-   * @input {any} Any additional options that the picker interface can accept.
-   * See the [Picker API docs](../../picker/Picker) for the picker options.
-   */
-  @Input() pickerOptions: any = {};
-
-  /**
-   * @output {any} Any expression to evaluate when the datetime selection has changed.
-   */
-  @Output() ionChange: EventEmitter<any> = new EventEmitter();
-
-  /**
-   * @output {any} Any expression to evaluate when the datetime selection was cancelled.
-   */
-  @Output() ionCancel: EventEmitter<any> = new EventEmitter();
 
   constructor(
     private _form: Form,
@@ -690,13 +661,6 @@ export class DateTime implements AfterContentInit, ControlValueAccessor, OnDestr
   /**
    * @private
    */
-  getValue(): DateTimeData {
-    return this._value;
-  }
-
-  /**
-   * @private
-   */
   checkHasValue(inputValue: any) {
     if (this._item) {
       this._item.setCssClass('input-has-value', !!(inputValue && inputValue !== ''));
@@ -749,14 +713,6 @@ export class DateTime implements AfterContentInit, ControlValueAccessor, OnDestr
     max.hour = max.hour || 23;
     max.minute = max.minute || 59;
     max.second = max.second || 59;
-  }
-
-  /**
-   * @input {boolean} Whether or not the datetime component is disabled. Default `false`.
-   */
-  @Input()
-  get disabled() {
-    return this._disabled;
   }
 
   set disabled(val) {
